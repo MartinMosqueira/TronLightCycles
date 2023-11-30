@@ -1,3 +1,5 @@
 enviroment
 testgame.py
 .idea
+movement.py
+.gitignore
