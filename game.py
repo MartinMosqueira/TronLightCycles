@@ -33,6 +33,7 @@ player_pos = pygame.Vector2(window.get_width() / 2, window.get_height() / 2)
 dt = 0
 direction = pygame.Vector2(0, 0)  # Inicialmente sin movimiento
 angle = 0  # Inicialmente sin rotación
+lines = []
 
 while running:
     for event in pygame.event.get():
@@ -47,6 +48,10 @@ while running:
     pygame.draw.rect(window, edges, (0, alto - grosor_borde, ancho, grosor_borde))  # Borde inferior
     pygame.draw.rect(window, edges, (0, 0, grosor_borde, alto))  # Borde izquierdo
     pygame.draw.rect(window, edges, (ancho - grosor_borde, 0, grosor_borde, alto))  # Borde derecho
+
+    # Dibujar líneas de rastro
+    if len(lines) >= 2:
+        pygame.draw.lines(window, (252, 212, 4), False, lines, 5)
 
     # Draw rotated cycle orange
     rotated_player = pygame.transform.rotate(playerOrange, angle)
@@ -76,6 +81,10 @@ while running:
     angle = direction.angle_to(pygame.Vector2(0, -1))  # Calcular ángulo con respecto a arriba
     player_pos += direction * 300 * dt
 
+    # Agregar la posición actual a la lista de rastro
+    rounded_position = (round(player_pos.x), round(player_pos.y))
+    lines.append(rounded_position)
+
     # Limites de la pantalla
     player_pos.x = max(30, min(player_pos.x, ancho - 30))
     player_pos.y = max(30, min(player_pos.y, alto - 30))
@@ -85,48 +94,3 @@ while running:
     dt = clock.tick(60) / 1000
 
 pygame.quit()
-
-'''
-    # Rotate image up
-    imagen_rotada_arriba = pygame.transform.rotate(playerOrange, 180)
-    rect_rotado_arriba = imagen_rotada_arriba.get_rect(center=(500,100))
-    window.blit(imagen_rotada_arriba, rect_rotado_arriba.topleft)
-
-    # Rotate image down
-    imagen_rotada_abajo = pygame.transform.rotate(playerOrange, 0)
-    rect_rotado_abajo = imagen_rotada_abajo.get_rect(center=(500,200))
-    window.blit(imagen_rotada_abajo, rect_rotado_abajo.topleft)
-
-    # Rotate image right
-    imagen_rotada_derecha = pygame.transform.rotate(playerOrange, 90)
-    rect_rotado_derecha = imagen_rotada_derecha.get_rect(center=(500,300))
-    window.blit(imagen_rotada_derecha, rect_rotado_derecha.topleft)
-
-    # Rotate image left
-    imagen_rotada_izquierda = pygame.transform.rotate(playerOrange, -90)
-    rect_rotado_izquierda = imagen_rotada_izquierda.get_rect(center=(500,400))
-    window.blit(imagen_rotada_izquierda, rect_rotado_izquierda.topleft)
-
-    # Draw cycle blue
-
-    # Rotate image up
-    imagen_rotada_arriba = pygame.transform.rotate(playerBlue, 180)
-    rect_rotado_arriba = imagen_rotada_arriba.get_rect(center=(400,100))
-    window.blit(imagen_rotada_arriba, rect_rotado_arriba.topleft)
-
-    # Rotate image down
-    imagen_rotada_abajo = pygame.transform.rotate(playerBlue, 0)
-    rect_rotado_abajo = imagen_rotada_abajo.get_rect(center=(400,200))
-    window.blit(imagen_rotada_abajo, rect_rotado_abajo.topleft)
-
-    # Rotate image right
-    imagen_rotada_derecha = pygame.transform.rotate(playerBlue, 90)
-    rect_rotado_derecha = imagen_rotada_derecha.get_rect(center=(400,300))
-    window.blit(imagen_rotada_derecha, rect_rotado_derecha.topleft)
-
-    # Rotate image left
-    imagen_rotada_izquierda = pygame.transform.rotate(playerBlue, -90)
-    rect_rotado_izquierda = imagen_rotada_izquierda.get_rect(center=(400,400))
-    window.blit(imagen_rotada_izquierda, rect_rotado_izquierda.topleft)
-    
-'''
