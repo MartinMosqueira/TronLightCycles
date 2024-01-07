@@ -1,96 +1,107 @@
 import pygame
-import sys
 from pygame.locals import *
+import sys
 
-# Initialize pygame
+# initialize the game engine
 pygame.init()
 
-ancho = 1000
-alto = 600
+# colour definitions
+background = (8, 4, 36)
+black = (0, 0, 0)
+orange = (252, 212, 4)
+blue = (28, 112, 196)
 
-# window
-window = pygame.display.set_mode((1000, 600))
+# sets up the window
+x = 800
+y = 800
+size = [x, y]
+screen = pygame.display.set_mode(size)
 
 # title and icon
-pygame.display.set_caption("Hello World")
+pygame.display.set_caption("Tron")
 icon = pygame.image.load("images/tron-icon.jpg")
 pygame.display.set_icon(icon)
 
-# load sprite cycle orange
-playerOrange = pygame.image.load("images/cycle-orange.png")
-
-# load sprite cycle blue
+# sprite
 playerBlue = pygame.image.load("images/cycle-blue.png")
 
-color = (8, 4, 36)
-edges = (112, 140, 148)
+p1x = x // 4
+p1y = y // 4
+p1alive = True
+p1colour = blue
+p1score = 0
+trail = []
 
-# clock
+grid = [[False for _ in range(x // 20)] for _ in range(y // 20)]
+
+p1direction = "right"
+
 clock = pygame.time.Clock()
 
 running = True
-player_pos = pygame.Vector2(window.get_width() / 2, window.get_height() / 2)
-dt = 0
-direction = pygame.Vector2(0, 0)  # Inicialmente sin movimiento
-angle = 0  # Inicialmente sin rotación
-lines = []
 
 while running:
     for event in pygame.event.get():
         if event.type == QUIT:
-            pygame.quit()
-            sys.exit()
+            running = False
 
-    window.fill(color)
+        elif event.type == KEYDOWN:
+            if event.key == K_a:
+                if p1direction != "right":
+                    p1direction = "left"
+            elif event.key == K_d:
+                if p1direction != "left":
+                    p1direction = "right"
+            elif event.key == K_w:
+                if p1direction != "down":
+                    p1direction = "up"
+            elif event.key == K_s:
+                if p1direction != "up":
+                    p1direction = "down"
 
-    grosor_borde = 10
-    pygame.draw.rect(window, edges, (0, 0, ancho, grosor_borde))  # Borde superior
-    pygame.draw.rect(window, edges, (0, alto - grosor_borde, ancho, grosor_borde))  # Borde inferior
-    pygame.draw.rect(window, edges, (0, 0, grosor_borde, alto))  # Borde izquierdo
-    pygame.draw.rect(window, edges, (ancho - grosor_borde, 0, grosor_borde, alto))  # Borde derecho
+        elif event.type == pygame.K_SPACE:
+            pass
 
-    # Dibujar líneas de rastro
-    if len(lines) >= 2:
-        pygame.draw.lines(window, (252, 212, 4), False, lines, 5)
+    if p1alive:
+        trail.append((p1x, p1y))
 
-    # Draw rotated cycle orange
-    rotated_player = pygame.transform.rotate(playerOrange, angle)
-    player_rect = rotated_player.get_rect(center=player_pos)
-    window.blit(rotated_player, player_rect.topleft)
+        # sets the initial map
+        screen.fill(background)
+        for i in range(0, x, 20):
+            pygame.draw.line(screen, black, [i, 0], [i, x], 1)
+            pygame.draw.line(screen, black, [0, i], [y, i], 1)
 
-    keys = pygame.key.get_pressed()
-    new_direction = pygame.Vector2(0, 0)
-    if keys[pygame.K_w]:
-        new_direction.y = -1
-    if keys[pygame.K_s]:
-        new_direction.y = 1
-    if keys[pygame.K_a]:
-        new_direction.x = -1
-    if keys[pygame.K_d]:
-        new_direction.x = 1
+        for coord in trail:
+            pygame.draw.rect(screen, p1colour, [coord[0] + 1, coord[1] + 1, (x // 40), (x // 40)])
 
-    # Si se ha pulsado alguna tecla de movimiento, actualizar la dirección
-    if new_direction.length() != 0:
-        direction = new_direction
+        screen.blit(playerBlue, (p1x, p1y))
+        pygame.display.update()
 
-    # No permite movimientos en diagonal
-    if new_direction.x and new_direction.y != 0:
-        direction = pygame.Vector2(0, 0)
+    if p1x >= 800 or p1x < 0 or p1y >= 800 or p1y < 0:
+        p1alive = False
 
-    # Actualizar ángulo y posición del jugador
-    angle = direction.angle_to(pygame.Vector2(0, -1))  # Calcular ángulo con respecto a arriba
-    player_pos += direction * 300 * dt
+    else:
+        if grid[p1x // 20 - 1][p1y // 20 - 1]:
+            p1alive = False
+        grid[p1x // 20 - 1][p1y // 20 - 1] = True
 
-    # Agregar la posición actual a la lista de rastro
-    rounded_position = (round(player_pos.x), round(player_pos.y))
-    lines.append(rounded_position)
+    if p1alive:
+        if p1direction == "left":
+            p1x -= 20
+        elif p1direction == "right":
+            p1x += 20
+        elif p1direction == "up":
+            p1y -= 20
+        elif p1direction == "down":
+            p1y += 20
 
-    # Limites de la pantalla
-    player_pos.x = max(30, min(player_pos.x, ancho - 30))
-    player_pos.y = max(30, min(player_pos.y, alto - 30))
+    if p1alive:
+        p1score += 1
+
+    clock.tick(15)
 
     pygame.display.update()
 
-    dt = clock.tick(60) / 1000
-
+print(p1score)
 pygame.quit()
+sys.exit()
