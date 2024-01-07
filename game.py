@@ -32,6 +32,10 @@ p1colour = blue
 p1score = 0
 trail = []
 
+# Rotating the sprite
+direction = pygame.Vector2(0, 0)
+angle = 0
+
 grid = [[False for _ in range(x // 20)] for _ in range(y // 20)]
 
 p1direction = "right"
@@ -74,7 +78,8 @@ while running:
         for coord in trail:
             pygame.draw.rect(screen, p1colour, [coord[0] + 1, coord[1] + 1, (x // 40), (x // 40)])
 
-        screen.blit(playerBlue, (p1x, p1y))
+        rotated_player = pygame.transform.rotate(playerBlue, angle)
+        screen.blit(rotated_player, (p1x, p1y))
         pygame.display.update()
 
     if p1x >= 800 or p1x < 0 or p1y >= 800 or p1y < 0:
@@ -85,18 +90,27 @@ while running:
             p1alive = False
         grid[p1x // 20 - 1][p1y // 20 - 1] = True
 
+    new_direction = pygame.Vector2(0, 0)
     if p1alive:
         if p1direction == "left":
             p1x -= 20
+            new_direction.x = -1
         elif p1direction == "right":
             p1x += 20
+            new_direction.x = 1
         elif p1direction == "up":
             p1y -= 20
+            new_direction.y = -1
         elif p1direction == "down":
             p1y += 20
+            new_direction.y = 1
 
     if p1alive:
         p1score += 1
+        if new_direction.length() != 0:
+            direction = new_direction
+
+    angle = direction.angle_to(pygame.Vector2(0, -1))
 
     clock.tick(15)
 
