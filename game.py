@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 import sys
 from GameBoard import GameBoard
+from Player import Player
 
 # initialize the game engine
 pygame.init()
@@ -21,28 +22,23 @@ size = [x, y]
 board = GameBoard(x, y)
 board.draw()
 
-# title and icon
-pygame.display.set_caption("Tron")
-icon = pygame.image.load("images/tron-icon.jpg")
-pygame.display.set_icon(icon)
-
-# sprite
-playerBlue = pygame.image.load("images/cycle-blue.png")
-
+# sets the players initial variables
 p1x = x // 4
 p1y = y // 4
 p1alive = True
 p1colour = blue
 p1score = 0
 trail = []
+# sprite
+playerBlue = pygame.image.load("images/cycle-blue.png")
+# sets the initial direction
+p1direction = "right"
 
 # Rotating the sprite
 direction = pygame.Vector2(0, 0)
 angle = 0
 
 grid = [[False for _ in range(x // 20)] for _ in range(y // 20)]
-
-p1direction = "right"
 
 clock = pygame.time.Clock()
 
@@ -74,6 +70,8 @@ while running:
         trail.append((p1x, p1y))
 
         board.screen.fill(background)
+
+        board.draw()
 
         for coord in trail:
             pygame.draw.rect(board.screen, p1colour, [coord[0] + 1, coord[1] + 1, (x // 40), (x // 40)])
