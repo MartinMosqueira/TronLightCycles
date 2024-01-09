@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 import sys
+from GameBoard import GameBoard
 
 # initialize the game engine
 pygame.init()
@@ -15,7 +16,10 @@ blue = (28, 112, 196)
 x = 800
 y = 800
 size = [x, y]
-screen = pygame.display.set_mode(size)
+
+# sets the initial map
+board = GameBoard(x, y)
+board.draw()
 
 # title and icon
 pygame.display.set_caption("Tron")
@@ -69,17 +73,13 @@ while running:
     if p1alive:
         trail.append((p1x, p1y))
 
-        # sets the initial map
-        screen.fill(background)
-        for i in range(0, x, 20):
-            pygame.draw.line(screen, black, [i, 0], [i, x], 1)
-            pygame.draw.line(screen, black, [0, i], [y, i], 1)
+        board.screen.fill(background)
 
         for coord in trail:
-            pygame.draw.rect(screen, p1colour, [coord[0] + 1, coord[1] + 1, (x // 40), (x // 40)])
+            pygame.draw.rect(board.screen, p1colour, [coord[0] + 1, coord[1] + 1, (x // 40), (x // 40)])
 
         rotated_player = pygame.transform.rotate(playerBlue, angle)
-        screen.blit(rotated_player, (p1x, p1y))
+        board.screen.blit(rotated_player, (p1x, p1y))
         pygame.display.update()
 
     if p1x >= 800 or p1x < 0 or p1y >= 800 or p1y < 0:
