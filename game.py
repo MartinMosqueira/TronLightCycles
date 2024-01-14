@@ -4,101 +4,86 @@ import sys
 from GameBoard import GameBoard
 from Player import Player
 
-# initialize the game engine
-pygame.init()
 
-# colour definitions
-background = (8, 4, 36)
-black = (0, 0, 0)
-orange = (252, 212, 4)
-blue = (28, 112, 196)
+class Game:
+    def __init__(self):
+        # initialize the game engine
+        pygame.init()
 
-# sets up the window
-x = 800
-y = 800
+        self.x = 800
+        self.y = 800
 
-# sets the initial map
-board = GameBoard(x, y)
-board.draw()
+        # sets the initial map
+        self.board = GameBoard(self.x, self.y)
 
-# sets the players 1 initial variables
-p1x = x // 4
-p1y = y // 4
-# sets the initial direction
-p1direction = "right"
+        # initialize the grid
+        self.grid = [[False for _ in range(self.x // 20)] for _ in range(self.y // 20)]
 
-# sets the players 2 initial variables
-p2x = (x * 3) // 4
-p2y = (y * 3) // 4
-# sets the initial direction
-p2direction = "left"
+        # initialize the players
+        self.players = [Player(self.x // 4, self.y // 4, (28, 112, 196), "right", "images/cycle-blue.png"),
+                        Player((self.x * 3) // 4, (self.y * 3) // 4, (252, 212, 4), "left", "images/cycle-orange.png")]
 
-# Rotating the sprite 1
-direction = pygame.Vector2(0, 0)
+        self.clock = pygame.time.Clock()
+        self.running = True
 
-# Rotating the sprite 2
-direction2 = pygame.Vector2(0, 0)
+    def run(self):
+        while self.running:
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    self.running = False
 
-players = [Player(p1x, p1y, blue, p1direction, "images/cycle-blue.png"),
-           Player(p2x, p2y, orange, p2direction, "images/cycle-orange.png")]
+                elif event.type == KEYDOWN:
+                    for player in self.players:
+                        if event.key == K_a:
+                            if player.direction != "right":
+                                player.direction = "left"
+                        elif event.key == K_d:
+                            if player.direction != "left":
+                                player.direction = "right"
+                        elif event.key == K_w:
+                            if player.direction != "down":
+                                player.direction = "up"
+                        elif event.key == K_s:
+                            if player.direction != "up":
+                                player.direction = "down"
 
-grid = [[False for _ in range(x // 20)] for _ in range(y // 20)]
+                elif event.type == pygame.K_SPACE:
+                    pass
 
-clock = pygame.time.Clock()
+            # draw board
+            self.board.draw()
 
-running = True
+            # draw players
+            for player in self.players:
+                player.draw(self.board)
 
-while running:
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            running = False
+            pygame.display.update()
 
-        elif event.type == KEYDOWN:
-            for player in players:
-                if event.key == K_a:
-                    if player.direction != "right":
-                        player.direction = "left"
-                elif event.key == K_d:
-                    if player.direction != "left":
-                        player.direction = "right"
-                elif event.key == K_w:
-                    if player.direction != "down":
-                        player.direction = "up"
-                elif event.key == K_s:
-                    if player.direction != "up":
-                        player.direction = "down"
+            # check for collisions
+            for player in self.players:
+                player.check_boundary()
+                player.check_for_match(self.grid)
 
-        elif event.type == pygame.K_SPACE:
-            pass
+            # update positions
+            if all(player.alive for player in self.players):
+                for player in self.players:
+                    player.update_position()
 
-    board.screen.fill(background)
-    board.draw()
+            # update scores
+            for player in self.players:
+                if player.alive:
+                    player.update_score()
 
-    for player in players:
-        player.draw(board)
+            self.clock.tick(15)
+            pygame.display.update()
 
-    pygame.display.update()
+        print('p1 score: ' + str(self.players[0].score))
+        print('p2 score: ' + str(self.players[1].score))
 
-    # check for collisions
-    for player in players:
-        player.check_boundary()
-        player.check_for_match(grid)
+        pygame.quit()
+        sys.exit()
 
-    # update positions
-    if players[0].alive and players[1].alive:
-        for player in players:
-            player.update_position()
 
-    # update scores
-    for player in players:
-        if player.alive:
-            player.update_score()
-
-    clock.tick(15)
-    pygame.display.update()
-
-print('p1 score: ' + str(players[0].score))
-print('p2 score: ' + str(players[1].score))
-
-pygame.quit()
-sys.exit()
+if __name__ == "__main__":
+    game = Game()
+    game.run()
