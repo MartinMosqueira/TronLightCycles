@@ -16,27 +16,31 @@ blue = (28, 112, 196)
 # sets up the window
 x = 800
 y = 800
-size = [x, y]
 
 # sets the initial map
 board = GameBoard(x, y)
 board.draw()
 
-# sets the players initial variables
+# sets the players 1 initial variables
 p1x = x // 4
 p1y = y // 4
-p1alive = True
-p1colour = blue
-p1score = 0
-trail = []
-# sprite
-playerBlue = pygame.image.load("images/cycle-blue.png")
 # sets the initial direction
 p1direction = "right"
 
-# Rotating the sprite
+# sets the players 2 initial variables
+p2x = (x * 3) // 4
+p2y = (y * 3) // 4
+# sets the initial direction
+p2direction = "left"
+
+# Rotating the sprite 1
 direction = pygame.Vector2(0, 0)
-angle = 0
+
+# Rotating the sprite 2
+direction2 = pygame.Vector2(0, 0)
+
+players = [Player(p1x, p1y, blue, p1direction, "images/cycle-blue.png"),
+           Player(p2x, p2y, orange, p2direction, "images/cycle-orange.png")]
 
 grid = [[False for _ in range(x // 20)] for _ in range(y // 20)]
 
@@ -50,70 +54,51 @@ while running:
             running = False
 
         elif event.type == KEYDOWN:
-            if event.key == K_a:
-                if p1direction != "right":
-                    p1direction = "left"
-            elif event.key == K_d:
-                if p1direction != "left":
-                    p1direction = "right"
-            elif event.key == K_w:
-                if p1direction != "down":
-                    p1direction = "up"
-            elif event.key == K_s:
-                if p1direction != "up":
-                    p1direction = "down"
+            for player in players:
+                if event.key == K_a:
+                    if player.direction != "right":
+                        player.direction = "left"
+                elif event.key == K_d:
+                    if player.direction != "left":
+                        player.direction = "right"
+                elif event.key == K_w:
+                    if player.direction != "down":
+                        player.direction = "up"
+                elif event.key == K_s:
+                    if player.direction != "up":
+                        player.direction = "down"
 
         elif event.type == pygame.K_SPACE:
             pass
 
-    if p1alive:
-        trail.append((p1x, p1y))
+    board.screen.fill(background)
+    board.draw()
 
-        board.screen.fill(background)
-
-        board.draw()
-
-        for coord in trail:
-            pygame.draw.rect(board.screen, p1colour, [coord[0] + 1, coord[1] + 1, (x // 40), (x // 40)])
-
-        rotated_player = pygame.transform.rotate(playerBlue, angle)
-        board.screen.blit(rotated_player, (p1x, p1y))
-        pygame.display.update()
-
-    if p1x >= 800 or p1x < 0 or p1y >= 800 or p1y < 0:
-        p1alive = False
-
-    else:
-        if grid[p1x // 20 - 1][p1y // 20 - 1]:
-            p1alive = False
-        grid[p1x // 20 - 1][p1y // 20 - 1] = True
-
-    new_direction = pygame.Vector2(0, 0)
-    if p1alive:
-        if p1direction == "left":
-            p1x -= 20
-            new_direction.x = -1
-        elif p1direction == "right":
-            p1x += 20
-            new_direction.x = 1
-        elif p1direction == "up":
-            p1y -= 20
-            new_direction.y = -1
-        elif p1direction == "down":
-            p1y += 20
-            new_direction.y = 1
-
-    if p1alive:
-        p1score += 1
-        if new_direction.length() != 0:
-            direction = new_direction
-
-    angle = direction.angle_to(pygame.Vector2(0, -1))
-
-    clock.tick(15)
+    for player in players:
+        player.draw(board)
 
     pygame.display.update()
 
-print(p1score)
+    # check for collisions
+    for player in players:
+        player.check_boundary()
+        player.check_for_match(grid)
+
+    # update positions
+    if players[0].alive and players[1].alive:
+        for player in players:
+            player.update_position()
+
+    # update scores
+    for player in players:
+        if player.alive:
+            player.update_score()
+
+    clock.tick(15)
+    pygame.display.update()
+
+print('p1 score: ' + str(players[0].score))
+print('p2 score: ' + str(players[1].score))
+
 pygame.quit()
 sys.exit()
